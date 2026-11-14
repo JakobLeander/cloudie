@@ -1,0 +1,5 @@
+{
+  "githubIssues.issueBranchTitle": "feature/${issueNumber}-${sanitizedIssueTitle}",
+  "git.pruneOnFetch": true,
+  "git.autofetch": true
+}
