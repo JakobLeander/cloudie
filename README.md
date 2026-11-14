@@ -20,8 +20,27 @@ This is a Pepper's ghost optical illusion, not a true hologram.
 
 The repository is an early scaffold. The cloud service is planned to expose an
 MCP tool for updating the companion's state and an HTTP API for the device.
-The firmware, hardware setup, state contract, and deployment details are still
-under development. The ESP board and firmware SDK have not been finalized.
+The firmware, state contract, and deployment details are still under
+development.
+
+## Hardware
+
+For prototyping, the device uses an ESP32-WROOM-32 DevKit V1. The display is a
+Waveshare [1.5-inch RGB OLED module](https://www.waveshare.com/product/displays/oled/oled-3/1.5inch-rgb-oled-module.htm)
+(128×128 resolution, 65K colors, SPI interface, 1351 driver). Its viewing area is
+26.86 × 26.86 mm and the module measures about 44.5 × 37.0 mm. This is the largest square quality micro OLED I cound find.
+
+The OLED is connected to the ESP32 DevKit V1 using the following pins:
+
+| OLED pin | ESP32 DevKit pin | Notes |
+| --- | --- | --- |
+| VCC | 3V3 | The module supports a 3.3 V or 5 V supply, but its supply and logic voltage must match. Use 3V3 for the ESP32's 3.3 V logic. |
+| GND | GND | |
+| DIN | GPIO23 | MOSI (VSPI) |
+| CLK (SCL) | GPIO18 | SCK (VSPI) |
+| CS | GPIO5 | Any free GPIO can be used. |
+| DC | GPIO16 | Any free GPIO can be used. |
+| RST | GPIO17 | Any free GPIO can be used. |
 
 ## Repository layout
 
