@@ -23,6 +23,28 @@ MCP tool for updating the companion's state and an HTTP API for the device.
 The firmware, state contract, and deployment details are still under
 development.
 
+## Use Cloudie with Claude
+
+One reliable way to have Claude call Cloudie's MCP tool is to add the deployed
+Cloudie MCP server as a connector in Claude, then use it in a Claude Project:
+
+1. Deploy the server as described in [`mcp/README.md`](mcp/README.md), and add
+   its MCP endpoint (`https://<worker>.<your-account>.workers.dev/mcp`) as a
+   connector in Claude.
+2. Create or open a Claude Project and make sure the Cloudie connector is
+   available to it.
+3. Add project instructions describing when Claude should call the
+   `set_expression` tool. For example:
+
+   > When answering a question about good news, set Cloudie's expression to
+   > `happy`. When the user says they are going to sleep, set it to `sleepy`.
+   > When something is surprising, set it to `surprised`. Call `set_expression`
+   > before responding, and only use those expression names.
+
+The tool accepts `happy`, `sleepy`, and `surprised`. See [`mcp/README.md`](mcp/README.md)
+for local setup and other MCP client connection options. The deployed server
+does not currently implement authentication.
+
 ## Hardware
 
 For prototyping, the device uses an ESP32-WROOM-32 DevKit V1. The display is a
