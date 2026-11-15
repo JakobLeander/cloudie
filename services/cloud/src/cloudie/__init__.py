@@ -1,1 +1,0 @@
-"""Cloudie cloud service package."""
