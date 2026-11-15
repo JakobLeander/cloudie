@@ -37,6 +37,8 @@ Then deploy:
 npm run deploy
 ```
 
+GitHub Actions also deploys the Worker when changes are pushed to `mcp/` on `main`. You can start a deployment manually from the **Deploy MCP Worker** workflow. Both methods require the repository secrets `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`.
+
 The Worker name is configured in [`wrangler.jsonc`](./wrangler.jsonc) as `cloudie-mcp`. Cloudflare serves it at `https://cloudie-mcp.<your-account>.workers.dev/mcp` when the `workers.dev` subdomain is enabled for your account. Change the `name` in `wrangler.jsonc` to use a different Worker name. The MCP server's client-facing name (`cloudie`) is configured separately in [`src/index.ts`](./src/index.ts).
 
 This server does not implement authentication, so anyone who can reach the deployed endpoint can call its tool.
