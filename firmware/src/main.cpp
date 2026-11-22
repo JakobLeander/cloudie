@@ -5,34 +5,38 @@
 
 namespace
 {
-    constexpr unsigned long faceChangeIntervalMs = 5000;
-    unsigned long lastFaceChangeMs = 0;
-    using FaceRenderer = void (*)();
-    constexpr FaceRenderer faces[] = {
-        renderer::drawHappyFace,
-        renderer::drawSadFace,
-        renderer::drawNeutralFace,
-        renderer::drawCuriousFace,
-        renderer::drawThinkingFace,
-    };
-    constexpr size_t faceCount = sizeof(faces) / sizeof(faces[0]);
-    size_t currentFace = 0;
+    Renderer renderer(display::WIDTH, display::HEIGHT);
+    Renderer::Animation animation = Renderer::Animation::Attentive;
+    uint32_t lastAnimationChange = 0;
 }
 
 void setup()
 {
     display::begin();
-    faces[currentFace]();
-    lastFaceChangeMs = millis();
+    lastAnimationChange = millis();
 }
 
 void loop()
 {
-    const unsigned long now = millis();
-    if (now - lastFaceChangeMs >= faceChangeIntervalMs)
+    const uint32_t now = millis();
+    if (now - lastAnimationChange >= 10UL * 1000)
     {
-        currentFace = (currentFace + 1) % faceCount;
-        faces[currentFace]();
-        lastFaceChangeMs = now;
+        if (animation == Renderer::Animation::Sleep)
+        {
+            animation = Renderer::Animation::Attentive;
+        }
+        else
+        {
+            animation = Renderer::Animation::Sleep;
+        }
+
+        renderer.setAnimation(animation);
+        lastAnimationChange = now;
+    }
+
+    const uint16_t *bitmap = renderer.render();
+    if (bitmap != nullptr)
+    {
+        display::drawBitmap565(bitmap);
     }
 }
