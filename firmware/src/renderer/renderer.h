@@ -8,8 +8,11 @@ public:
     enum class Animation
     {
         Sleep,
-        Attentive,
-        Happy
+        Waiting,
+        Happy,
+        Sad,
+        Think,
+        Attention
     };
 
     Renderer(uint16_t width, uint16_t height);
@@ -32,5 +35,5 @@ private:
     uint32_t m_lastActivity = 0;
     uint32_t m_nextFrame = 0;
     uint32_t m_idleFor = 0;
-    Animation m_animation = Animation::Attentive;
+    Animation m_animation = Animation::Waiting;
 };

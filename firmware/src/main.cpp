@@ -6,7 +6,7 @@
 namespace
 {
     Renderer renderer(display::WIDTH, display::HEIGHT);
-    Renderer::Animation animation = Renderer::Animation::Attentive;
+    Renderer::Animation animation = Renderer::Animation::Waiting;
     uint32_t lastAnimationChange = 0;
 }
 
@@ -21,13 +21,13 @@ void loop()
     const uint32_t now = millis();
     if (now - lastAnimationChange >= 10UL * 1000)
     {
-        if (animation == Renderer::Animation::Sleep)
+        if (animation == Renderer::Animation::Attention)
         {
-            animation = Renderer::Animation::Happy;
+            animation = Renderer::Animation::Waiting;
         }
-        else
+        else if (animation == Renderer::Animation::Waiting)
         {
-            animation = Renderer::Animation::Sleep;
+            animation = Renderer::Animation::Attention;
         }
 
         renderer.setAnimation(animation);
