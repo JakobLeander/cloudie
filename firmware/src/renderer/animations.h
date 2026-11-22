@@ -31,8 +31,12 @@ enum Face
     FACE_CALM,
     FACE_LOOK_L,
     FACE_LOOK_R,
-    FACE_CALM_BLINK
-}; // last four = relaxed idle faces
+    FACE_CALM_BLINK, // relaxed idle faces
+    FACE_SAD,
+    FACE_SAD_CLOSED,
+    FACE_THINK,
+    FACE_THINK_L
+}; // mood faces
 enum Fx
 {
     FX_NONE,
@@ -40,8 +44,11 @@ enum Fx
     FX_SPARK,
     FX_DUST,
     FX_BURST,
-    FX_ZZZ
-};
+    FX_ZZZ,
+    FX_TEARS,
+    FX_THINK,
+    FX_ALERT
+}; // fxA: tear fall distance / thought dots (0..255) / alert-arc radius
 
 // One pose = everything needed to draw one frame.
 struct Pose
@@ -123,6 +130,46 @@ static const Key SEQ_DOZE[] = {
     {3000, {0, 0, 81, 79, 20, 20, 0, 0, FACE_SLEEPY, FX_ZZZ, 0}},
     {4500, {0, 0, 79, 82, 18, 18, 0, 0, FACE_SLEEPY, FX_ZZZ, 10}},
     {6000, {0, 0, 81, 79, 20, 20, 0, 0, FACE_SLEEPY, FX_ZZZ, 0}},
+};
+
+// ---------------- MOOD sequences ----------------
+// 6) SAD (3 s loop): slumped body, arms hanging, worried brows, frown, tears that run down, a little sob with eyes shut.
+static const Key SEQ_SAD[] = {
+    {0, {0, 0, 86, 72, 8, 8, -3, 0, FACE_SAD, FX_TEARS, 0}},
+    {900, {0, 0, 84, 75, 12, 12, -4, 0, FACE_SAD, FX_TEARS, 6}},        // slow sigh in
+    {1500, {0, 0, 86, 72, 8, 8, -3, 0, FACE_SAD_CLOSED, FX_TEARS, 10}}, // sob: eyes shut + tiny shudder
+    {1650, {1, 0, 86, 72, 8, 8, -3, 0, FACE_SAD_CLOSED, FX_TEARS, 12}},
+    {1800, {-1, 0, 86, 72, 8, 8, -3, 0, FACE_SAD_CLOSED, FX_TEARS, 14}},
+    {1950, {1, 0, 86, 72, 8, 8, -3, 0, FACE_SAD_CLOSED, FX_TEARS, 16}},
+    {2100, {0, 0, 86, 72, 8, 8, -3, 0, FACE_SAD, FX_TEARS, 18}},
+    {2400, {0, 0, 86, 71, 8, 8, -3, 0, FACE_SAD, FX_TEARS, 20}}, // deepest slump, tear drips off the chin
+    {2500, {0, 0, 86, 71, 8, 8, -3, 0, FACE_SAD, FX_NONE, 0}},
+    {3000, {0, 0, 86, 72, 8, 8, -3, 0, FACE_SAD, FX_TEARS, 0}}, // new tear starts; = first key, loops
+};
+// 7) THINKING (3.2 s loop): eyes glance up, one brow raised, finger-tap arm, head tilts, thought cloud fills with dots.
+static const Key SEQ_THINK[] = {
+    {0, {0, 0, 80, 80, 25, 140, 3, 0, FACE_THINK, FX_THINK, 0}},
+    {500, {0, 0, 80, 81, 25, 150, 3, 0, FACE_THINK, FX_THINK, 64}}, // tap, first dot
+    {800, {0, 0, 80, 81, 25, 140, 3, 0, FACE_THINK, FX_THINK, 64}},
+    {1300, {0, 0, 80, 80, 25, 145, -3, 0, FACE_THINK_L, FX_THINK, 128}}, // glance + tilt other way, 2 dots
+    {1800, {0, 0, 80, 81, 25, 150, -3, 0, FACE_THINK_L, FX_THINK, 128}},
+    {2100, {0, 0, 80, 81, 25, 140, -3, 0, FACE_THINK_L, FX_THINK, 192}}, // 3 dots
+    {2600, {0, 0, 79, 82, 25, 145, 3, 0, FACE_THINK, FX_THINK, 192}},
+    {3200, {0, 0, 80, 80, 25, 140, 3, 0, FACE_THINK, FX_THINK, 0}}, // dots clear; = first key, loops
+};
+// 8) ATTENTION (1.8 s loop): "hey, over here!" two quick hops, big waving arm, "!" mark and vibration arcs.
+static const Key SEQ_ATTENTION[] = {
+    {0, {0, 0, 80, 80, 25, 100, 0, 0, FACE_EXCITED, FX_ALERT, 0}},
+    {150, {0, -7, 76, 88, 25, 165, 0, 2, FACE_EXCITED, FX_ALERT, 6}}, // hop 1
+    {300, {0, 0, 84, 76, 25, 120, 0, 0, FACE_EXCITED, FX_ALERT, 0}},
+    {450, {0, -7, 76, 88, 25, 165, 0, 2, FACE_EXCITED, FX_ALERT, 6}}, // hop 2
+    {600, {0, 0, 84, 76, 25, 120, 0, 0, FACE_SURPRISED, FX_ALERT, 0}},
+    {800, {0, 0, 80, 80, 25, 170, 0, 0, FACE_HAPPY, FX_ALERT, 4}}, // big wave
+    {1000, {-2, 0, 80, 80, 25, 110, -3, 0, FACE_HAPPY, FX_ALERT, 8}},
+    {1200, {2, 0, 80, 80, 25, 170, 3, 0, FACE_HAPPY, FX_ALERT, 4}},
+    {1400, {-2, 0, 80, 80, 25, 110, -3, 0, FACE_HAPPY, FX_ALERT, 8}},
+    {1600, {0, 0, 80, 80, 25, 140, 0, 0, FACE_EXCITED, FX_ALERT, 0}},
+    {1800, {0, 0, 80, 80, 25, 100, 0, 0, FACE_EXCITED, FX_ALERT, 0}}, // = first key, loops
 };
 static const Pose POSE_IDLE = {0, 0, 80, 80, 25, 25, 0, 0, FACE_HAPPY, FX_NONE, 0};
 
@@ -206,7 +253,7 @@ void thickLine(G &g, int x0, int y0, int x1, int y1, uint16_t c)
 template <class G>
 void thickArc(G &g, int cx, int cy, int r, int a0, int a1, uint16_t c)
 {
-    for (int a = a0; a <= a1; a += 4)
+    for (int a = a0; a <= a1; a += 2)
     {
         float t = a * 0.0174533f;
         g.fillCircle(cx + (int)lroundf(r * cosf(t)), cy - (int)lroundf(r * sinf(t)), 1, c);
@@ -353,6 +400,49 @@ void drawCloudiePose(G &g, const Pose &p, const DropPalette &P = PAL_LIME, bool 
         arcs(80, 210, 330);
         thickArc(g, FX(64), FY(91), 6, 235, 305, P.INK);
         break;
+    case FACE_SAD:
+    case FACE_SAD_CLOSED:
+        if (p.face == FACE_SAD)
+        {
+            for (int s = 0; s < 2; s++)
+            {
+                int x = FX(s ? 76 : 52), y = FY(86);
+                g.fillCircle(x, y, 6, P.INK);
+                g.fillCircle(x - 2, y - 2, 2, P.WHITE);
+                g.fillCircle(x + 2, y + 2, 1, P.WHITE);
+            }
+        }
+        else
+            arcs(80, 210, 330);
+        thickLine(g, FX(44), FY(75), FX(56), FY(70), P.INK);
+        thickLine(g, FX(72), FY(70), FX(84), FY(75), P.INK); // worried brows
+        thickArc(g, FX(64), FY(101), 7, 55, 125, P.INK);
+        break; // frown
+    case FACE_THINK:
+    case FACE_THINK_L:
+    {
+        const int sh = (p.face == FACE_THINK) ? 3 : -3;
+        for (int s = 0; s < 2; s++)
+        {
+            int x = FX(s ? 76 : 52) + sh, y = FY(83);
+            g.fillCircle(x, y, 5, P.INK);
+            g.fillCircle(x - 1, y - 2, 2, P.WHITE);
+            g.fillCircle(x + 2, y + 1, 1, P.WHITE);
+        }
+        if (p.face == FACE_THINK)
+        {
+            thickLine(g, FX(45), FY(73), FX(57), FY(74), P.INK);
+            thickLine(g, FX(70), FY(69), FX(82), FY(66), P.INK); // right brow raised
+            thickLine(g, FX(60), FY(95), FX(70), FY(93), P.INK);
+        }
+        else
+        {
+            thickLine(g, FX(46), FY(66), FX(58), FY(69), P.INK);
+            thickLine(g, FX(71), FY(74), FX(83), FY(73), P.INK); // left brow raised
+            thickLine(g, FX(58), FY(93), FX(68), FY(95), P.INK);
+        }
+        break;
+    }
     case FACE_EFFORT:
         thickLine(g, FX(47), FY(81), FX(55), FY(85), P.INK);
         thickLine(g, FX(55), FY(85), FX(47), FY(89), P.INK);
@@ -399,6 +489,43 @@ void drawCloudiePose(G &g, const Pose &p, const DropPalette &P = PAL_LIME, bool 
         thickLine(g, zx - 3, zy, zx + 3, zy, P.ACC);
         thickLine(g, zx + 3, zy, zx - 3, zy + 6, P.ACC);
         thickLine(g, zx - 3, zy + 6, zx + 3, zy + 6, P.ACC);
+        break;
+    }
+    case FX_TEARS:
+        for (int i = 0; i < 2; i++)
+        {
+            int fall = p.fxA - i * 6;
+            if (fall < 0)
+                continue; // second tear lags behind
+            int x = FX(i ? 84 : 44) + (i ? 2 : -2), y = FY(92) + fall;
+            g.fillCircle(x, y, 2, P.DUST);
+            g.fillTriangle(x, y - 6, x - 2, y - 1, x + 2, y - 1, P.DUST);
+            g.fillRect(x - 1, y - 1, 1, 1, P.WHITE);
+        }
+        break;
+    case FX_THINK:
+    {
+        const int8_t B[4][3] = {{-9, 2, 8}, {0, -3, 9}, {9, 2, 8}, {0, 4, 8}}; // thought cloud = 4 overlapping circles
+        const int cxb = bx + 32, cyb = bottom - 84, dots = p.fxA / 64;
+        g.fillCircle(bx + 16, bottom - 56, 2, P.DUST);
+        g.fillCircle(bx + 16, bottom - 56, 1, P.WHITE); // trail of little bubbles
+        g.fillCircle(bx + 21, bottom - 64, 3, P.DUST);
+        g.fillCircle(bx + 21, bottom - 64, 2, P.WHITE);
+        for (int i = 0; i < 4; i++)
+            g.fillCircle(cxb + B[i][0], cyb + B[i][1], B[i][2] + 1, P.DUST);
+        for (int i = 0; i < 4; i++)
+            g.fillCircle(cxb + B[i][0], cyb + B[i][1], B[i][2], P.WHITE);
+        for (int i = 0; i < 3; i++)
+            g.fillCircle(cxb - 8 + i * 8, cyb + 2, 2, i < dots ? P.INK : P.DUST);
+        break;
+    }
+    case FX_ALERT:
+    {
+        const int ex = bx + 30, ey = bottom - 98, rad = 38 + p.fxA;
+        thickLine(g, ex, ey, ex, ey + 13, P.ACC);
+        g.fillCircle(ex, ey + 20, 2, P.ACC); // "!"
+        thickArc(g, bx, cy - 6, rad, 145, 215, P.ACC);
+        thickArc(g, bx, cy - 6, rad, -35, 35, P.ACC); // vibration arcs
         break;
     }
     case FX_BURST:
