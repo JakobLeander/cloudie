@@ -6,9 +6,12 @@ Cloudie is a remote MCP server that exposes a tool for setting Cloudie's express
 
 `set_expression` accepts one `name` value:
 
-- `happy`
-- `sleepy`
-- `surprised`
+- `Sleep`
+- `Waiting`
+- `Happy`
+- `Sad`
+- `Think`
+- `Attention`
 
 The tool replies with `Expression set to <name>`.
 
@@ -22,6 +25,28 @@ npm run dev
 ```
 
 The local MCP endpoint is `http://localhost:8787/mcp`.
+
+## Run locally with MCP Inspector
+
+Start the MCP server:
+
+```bash
+npm install
+npm run dev
+```
+
+In a second terminal, start the MCP Inspector:
+
+```bash
+npx @modelcontextprotocol/inspector
+```
+
+Open the Inspector URL shown in the terminal. Configure the connection with:
+
+- **Transport:** Streamable HTTP
+- **URL:** `http://localhost:8787/mcp`
+
+Then click **Connect** and use the **set_expression** tool to test its available states.
 
 ## Deploy to Cloudflare
 
