@@ -8,7 +8,8 @@ public:
     enum class Animation
     {
         Sleep,
-        Attentive
+        Attentive,
+        Happy
     };
 
     Renderer(uint16_t width, uint16_t height);
@@ -27,6 +28,7 @@ private:
     GFXcanvas16 m_canvas;
     uint32_t m_now = 0;
     uint32_t m_stepStart = 0;
+    uint32_t m_step = 0;
     uint32_t m_lastActivity = 0;
     uint32_t m_nextFrame = 0;
     uint32_t m_idleFor = 0;

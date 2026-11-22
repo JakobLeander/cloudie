@@ -23,7 +23,7 @@ void loop()
     {
         if (animation == Renderer::Animation::Sleep)
         {
-            animation = Renderer::Animation::Attentive;
+            animation = Renderer::Animation::Happy;
         }
         else
         {
