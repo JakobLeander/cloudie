@@ -36,12 +36,12 @@ Cloudie MCP server as a connector in Claude, then use it in a Claude Project:
 3. Add project instructions describing when Claude should call the
    `set_expression` tool. For example:
 
-   > When answering a question about good news, set Cloudie's expression to
-   > `happy`. When the user says they are going to sleep, set it to `sleepy`.
-   > When something is surprising, set it to `surprised`. Call `set_expression`
-   > before responding, and only use those expression names.
+   > When Cloudie should rest, set its expression to `Sleep`. When it is idle,
+   > use `Waiting`; for good news use `Happy`; for bad news use `Sad`; while
+   > reasoning use `Think`; and when it needs to draw attention use `Attention`.
+   > Call `set_expression` before responding, and only use those state names.
 
-The tool accepts `happy`, `sleepy`, and `surprised`. See [`mcp/README.md`](mcp/README.md)
+The tool accepts `Sleep`, `Waiting`, `Happy`, `Sad`, `Think`, and `Attention`. See [`mcp/README.md`](mcp/README.md)
 for local setup and other MCP client connection options. The deployed server
 does not currently implement authentication.
 
