@@ -18,10 +18,10 @@ This is a Pepper's ghost optical illusion, not a true hologram.
 
 ## Project status
 
-The repository is an early scaffold. The cloud service is planned to expose an
-MCP tool for updating the companion's state and an HTTP API for the device.
-The firmware, state contract, and deployment details are still under
-development.
+The cloud service exposes an MCP tool for updating the companion's state and a
+`GET /state` HTTP endpoint for the device. State is currently held in Worker
+memory and may reset or differ between Worker instances. The firmware and
+deployment details are still under development.
 
 ## Use Cloudie with Claude
 
