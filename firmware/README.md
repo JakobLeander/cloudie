@@ -1,7 +1,8 @@
 # Firmware
 
-This directory is for the ESP firmware: device startup, display and animation
-code, and polling the cloud service for state.
+This directory contains ESP32 firmware for device startup, display and
+animation code, and polling the cloud service for state.
 
-The target board and firmware SDK are not specified yet. Choose them before
-adding toolchain-specific project files.
+To connect to Wi-Fi, copy `include/secrets.h.example` to `include/secrets.h`
+and set `WIFI_SSID` and `WIFI_PASSWORD`. `WORKER_URL` is prefilled with the
+Cloudflare Worker URL. The local credentials file is ignored by Git.

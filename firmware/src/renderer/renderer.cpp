@@ -1,5 +1,5 @@
-#include "renderer.h"
-#include "animations.h"
+#include "Renderer.h"
+#include "Animations.h"
 #include <math.h>
 #include <stddef.h>
 

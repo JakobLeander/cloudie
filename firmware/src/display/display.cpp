@@ -1,5 +1,5 @@
-#include "display.h"
-#include "../../include/config.h"
+#include "Display.h"
+#include "../../include/Config.h"
 #include <Adafruit_SSD1351.h>
 #include <SPI.h>
 
