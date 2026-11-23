@@ -2,6 +2,24 @@
 
 Cloudie is a remote MCP server that exposes a tool for setting Cloudie's expression. It runs on Cloudflare Workers and serves the MCP endpoint at `/mcp`.
 
+## Device state endpoint
+
+The device can query the current expression with:
+
+```http
+GET /state
+```
+
+The endpoint returns JSON, for example:
+
+```json
+{"state":"Waiting"}
+```
+
+The available values are `Sleep`, `Waiting`, `Happy`, `Sad`, `Think`, and
+`Attention`. State is held in Worker memory, so it can reset when the Worker
+restarts and may differ between Worker instances.
+
 ## Tool
 
 `set_expression` accepts one `name` value:
