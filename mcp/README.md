@@ -17,8 +17,9 @@ The endpoint returns JSON, for example:
 ```
 
 The available values are `Sleep`, `Waiting`, `Happy`, `Sad`, `Think`, and
-`Attention`. State is held in Worker memory, so it can reset when the Worker
-restarts and may differ between Worker instances.
+`Attention`. State is stored in Cloudflare KV and defaults to `Waiting` until
+it is first set. KV is eventually consistent, so a recently updated state may
+take 60 seconds or more to appear in other Cloudflare locations.
 
 ## Tool
 
@@ -43,6 +44,8 @@ npm run dev
 ```
 
 The local MCP endpoint is `http://localhost:8787/mcp`.
+Wrangler uses local KV storage during development, separate from the deployed
+namespace.
 
 ## Run locally with MCP Inspector
 
@@ -68,19 +71,20 @@ Then click **Connect** and use the **set_expression** tool to test its available
 
 ## Deploy to Cloudflare
 
-Authenticate Wrangler with your Cloudflare account if you have not already:
-
-```bash
-npx wrangler login
-```
-
-Then deploy:
+For a manual deployment, set `CLOUDFLARE_ACCOUNT_ID` and
+`CLOUDFLARE_API_TOKEN` in your environment, then run:
 
 ```bash
 npm run deploy
 ```
 
-GitHub Actions also deploys the Worker when changes are pushed to `mcp/` on `main`. You can start a deployment manually from the **Deploy MCP Worker** workflow. Both methods require the repository secrets `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`.
+Deployment creates or reuses the `cloudie-state` KV namespace and binds it to
+the Worker. GitHub Actions also deploys the Worker when changes are pushed to
+`mcp/` on `main`; you can start a deployment manually from the **Deploy MCP
+Worker** workflow. The workflow uses the repository secrets
+`CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`. The API token needs
+Workers KV Storage Metadata Read and Workers KV Storage Write permissions, in
+addition to the permissions needed to deploy Workers.
 
 The Worker name is configured in [`wrangler.jsonc`](./wrangler.jsonc) as `cloudie-mcp`. Cloudflare serves it at `https://cloudie-mcp.<your-account>.workers.dev/mcp` when the `workers.dev` subdomain is enabled for your account. Change the `name` in `wrangler.jsonc` to use a different Worker name. The MCP server's client-facing name (`cloudie`) is configured separately in [`src/index.ts`](./src/index.ts).
 
