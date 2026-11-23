@@ -3,11 +3,10 @@ import { createMcpHandler } from "agents/mcp/server";
 import { z } from "zod";
 
 const expressions = ["Sleep", "Waiting", "Happy", "Sad", "Think", "Attention"] as const;
-type Expression = (typeof expressions)[number];
 
-let currentExpression: Expression = "Waiting";
+const stateKey = "current-expression";
 
-function createServer() {
+function createServer(env: Env) {
 	const server = new McpServer({
 		name: "cloudie",
 		version: "1.0.0",
@@ -24,7 +23,7 @@ function createServer() {
 			}),
 		},
 		async ({ name }) => {
-			currentExpression = name;
+			await env.CLOUDIE_STATE.put(stateKey, name);
 			return {
 				content: [{ type: "text", text: `Expression set to ${name}` }],
 			};
@@ -34,10 +33,8 @@ function createServer() {
 	return server;
 }
 
-const handler = createMcpHandler(createServer);
-
 export default {
-	fetch(request: Request, env: Env, ctx: ExecutionContext) {
+	async fetch(request: Request, env: Env, ctx: ExecutionContext) {
 		const url = new URL(request.url);
 		if (url.pathname === "/state") {
 			if (request.method !== "GET") {
@@ -47,12 +44,13 @@ export default {
 				});
 			}
 
+			const state = await env.CLOUDIE_STATE.get(stateKey);
 			return Response.json(
-				{ state: currentExpression },
+				{ state: state ?? "Waiting" },
 				{ headers: { "Cache-Control": "no-store" } },
 			);
 		}
 
-		return handler(request, env, ctx);
+		return createMcpHandler(() => createServer(env))(request, env, ctx);
 	},
 } satisfies ExportedHandler<Env>;
