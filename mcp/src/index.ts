@@ -5,6 +5,10 @@ import { z } from "zod";
 const expressions = ["Sleep", "Waiting", "Happy", "Sad", "Think", "Attention"] as const;
 
 const stateKey = "current-expression";
+const storedStateSchema = z.object({
+	state: z.enum(expressions),
+	updatedAt: z.string().datetime(),
+});
 
 function createServer(env: Env) {
 	const server = new McpServer({
@@ -23,7 +27,10 @@ function createServer(env: Env) {
 			}),
 		},
 		async ({ name }) => {
-			await env.CLOUDIE_STATE.put(stateKey, name);
+			await env.CLOUDIE_STATE.put(
+				stateKey,
+				JSON.stringify({ state: name, updatedAt: new Date().toISOString() }),
+			);
 			return {
 				content: [{ type: "text", text: `Expression set to ${name}` }],
 			};
@@ -44,9 +51,22 @@ export default {
 				});
 			}
 
-			const state = await env.CLOUDIE_STATE.get(stateKey);
+			const stored = await env.CLOUDIE_STATE.get(stateKey);
+			let state: (typeof expressions)[number] = "Sleep";
+			let updatedAt: string | null = null;
+			if (stored) {
+				const legacyState = z.enum(expressions).safeParse(stored);
+				if (legacyState.success) {
+					state = legacyState.data;
+				} else {
+					const parsed = storedStateSchema.parse(JSON.parse(stored));
+					state = parsed.state;
+					updatedAt = parsed.updatedAt;
+				}
+			}
+
 			return Response.json(
-				{ state: state ?? "Waiting" },
+				{ state, updatedAt },
 				{ headers: { "Cache-Control": "no-store" } },
 			);
 		}
