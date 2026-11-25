@@ -56,6 +56,97 @@ std::string StateClient::getState() const
     return {};
 }
 
+std::string StateClient::getUpdatedAt() const
+{
+    const std::lock_guard<std::mutex> lock(m_lastUpdatedAtMutex);
+    return m_lastUpdatedAt;
+}
+
+std::string StateClient::getStateFromJson(const std::string &json)
+{
+    const std::string key = "\"state\"";
+    const size_t keyStart = json.find(key);
+    if (keyStart == std::string::npos)
+    {
+        return "";
+    }
+
+    const size_t colon = json.find(':', keyStart + key.length());
+    if (colon == std::string::npos)
+    {
+        return "";
+    }
+
+    size_t valueStart = colon + 1;
+    while (valueStart < json.length() &&
+           (json[valueStart] == ' ' || json[valueStart] == '\t' ||
+            json[valueStart] == '\r' || json[valueStart] == '\n'))
+    {
+        ++valueStart;
+    }
+
+    if (valueStart >= json.length() || json[valueStart] != '"')
+    {
+        return "";
+    }
+
+    const size_t valueEnd = json.find('"', valueStart + 1);
+    if (valueEnd == std::string::npos)
+    {
+        return "";
+    }
+
+    return json.substr(valueStart + 1, valueEnd - valueStart - 1);
+}
+
+std::string StateClient::getUpdatedAtFromJson(const std::string &json)
+{
+    const std::string key = "\"updatedAt\"";
+    const size_t keyStart = json.find(key);
+    if (keyStart == std::string::npos)
+    {
+        return "";
+    }
+
+    const size_t colon = json.find(':', keyStart + key.length());
+    if (colon == std::string::npos)
+    {
+        return "";
+    }
+
+    size_t valueStart = colon + 1;
+    while (valueStart < json.length() &&
+           (json[valueStart] == ' ' || json[valueStart] == '\t' ||
+            json[valueStart] == '\r' || json[valueStart] == '\n'))
+    {
+        ++valueStart;
+    }
+
+    if (valueStart >= json.length())
+    {
+        return "";
+    }
+
+    if (json.compare(valueStart, 4, "null") == 0)
+    {
+        return "";
+    }
+
+    if (json[valueStart] != '"')
+    {
+        return "";
+    }
+
+    const size_t valueEnd = json.find('"', valueStart + 1);
+    if (valueEnd == std::string::npos)
+    {
+        return "";
+    }
+
+    const std::string updatedAt = json.substr(valueStart + 1, valueEnd - valueStart - 1);
+    return updatedAt == "null" ? "" : updatedAt;
+}
+
 void StateClient::pollingTask(void *parameter)
 {
     StateClient *client = static_cast<StateClient *>(parameter);
@@ -115,9 +206,14 @@ void StateClient::fetchState()
     const String response = http.getString();
     http.end();
 
-    const int valueStart = response.indexOf(':') + 2;
-    const int valueEnd = response.indexOf('"', valueStart);
-    const String state = response.substring(valueStart, valueEnd);
+    const std::string json = response.c_str();
+    const std::string state = getStateFromJson(json);
+    if (state.empty())
+    {
+        Serial.println("Could not parse state from response.");
+        return;
+    }
+    const std::string updatedAt = getUpdatedAtFromJson(json);
 
     State parsedState = State::Unknown;
     if (state == "Sleep")
@@ -152,6 +248,10 @@ void StateClient::fetchState()
     }
 
     m_lastState.store(parsedState, std::memory_order_relaxed);
+    {
+        const std::lock_guard<std::mutex> lock(m_lastUpdatedAtMutex);
+        m_lastUpdatedAt = updatedAt;
+    }
 #else
     Serial.println("WORKER_URL is not configured in include/secrets.h.");
 #endif

@@ -1,9 +1,11 @@
 
 #include <Arduino.h>
+#include <ctime>
 #include "display/display.h"
 #include "network/WiFiManager.h"
 #include "network/StateClient.h"
 #include "renderer/renderer.h"
+#include "utils/IsoTimestamp.h"
 
 namespace
 {
@@ -15,8 +17,9 @@ namespace
     Renderer::Animation animation = Renderer::Animation::Waiting;
     StateClient stateClient;
 
-    uint32_t lastRecievedStateChange = 0;
+    uint32_t msSinceLastChange = UINT32_MAX;
     std::string lastRecievedState;
+
 }
 
 void setup()
@@ -25,20 +28,38 @@ void setup()
     wifiManager.connect();
     display::begin();
     stateClient.begin();
-    lastRecievedStateChange = millis();
 }
 
 void loop()
 {
-    const uint32_t now = millis();
-
     // Read the latest state cached by StateClient.
     const std::string state = stateClient.getState();
-    if (state != lastRecievedState)
+    const std::string lastUpdatedAt = stateClient.getUpdatedAt();
+
+    msSinceLastChange = UINT32_MAX;
+    if (!lastUpdatedAt.empty())
+    {
+        const uint64_t updatedAtMs = utils::parseIsoTimestampMs(lastUpdatedAt);
+        const time_t currentSeconds = std::time(nullptr);
+
+        if (updatedAtMs != 0 && currentSeconds > 0)
+        {
+            const uint64_t currentMs = static_cast<uint64_t>(currentSeconds) * 1000ULL;
+            if (currentMs >= updatedAtMs)
+            {
+                const uint64_t ageMs = currentMs - updatedAtMs;
+                msSinceLastChange = ageMs > UINT32_MAX
+                                        ? UINT32_MAX
+                                        : static_cast<uint32_t>(ageMs);
+            }
+        }
+    }
+
+    // If there is a recent state change, modify animation
+    if (state != lastRecievedState && msSinceLastChange < ATTENTION_AFTER_MS)
     {
         Serial.println(state.c_str());
         lastRecievedState = state;
-        lastRecievedStateChange = now;
 
         // Set animation to match the state.
         if (state == "Sleep")
@@ -68,11 +89,11 @@ void loop()
         renderer.setAnimation(animation);
     }
 
-    // Set to idle animation if no activity for a while
-    if (now - lastRecievedStateChange >= ATTENTION_AFTER_MS)
+    // Set to idle animation if no state changes for a while
+    if (msSinceLastChange >= ATTENTION_AFTER_MS)
     {
-        // set to sleep if no activity for longer while
-        if (now - lastRecievedStateChange >= SLEEP_AFTER_MS)
+        // set to sleep animation if no state changes for longer while
+        if (msSinceLastChange >= SLEEP_AFTER_MS)
         {
             animation = Renderer::Animation::Sleep;
         }
