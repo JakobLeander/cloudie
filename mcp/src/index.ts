@@ -1,3 +1,4 @@
+import { DurableObject } from "cloudflare:workers";
 import { McpServer } from "@modelcontextprotocol/server";
 import { createMcpHandler } from "agents/mcp/server";
 import { z } from "zod";
@@ -9,6 +10,16 @@ const storedStateSchema = z.object({
 	state: z.enum(expressions),
 	updatedAt: z.string().datetime(),
 });
+
+export class CloudieState extends DurableObject<Env> {
+	async readState() {
+		return (await this.ctx.storage.get<string>(stateKey)) ?? null;
+	}
+
+	async writeState(value: string) {
+		await this.ctx.storage.put(stateKey, value);
+	}
+}
 
 function createServer(env: Env) {
 	const server = new McpServer({
@@ -27,8 +38,8 @@ function createServer(env: Env) {
 			}),
 		},
 		async ({ name }) => {
-			await env.CLOUDIE_STATE.put(
-				stateKey,
+			const state = env.CLOUDIE_STATE.getByName("global");
+			await state.writeState(
 				JSON.stringify({ state: name, updatedAt: new Date().toISOString() }),
 			);
 			return {
@@ -51,7 +62,7 @@ export default {
 				});
 			}
 
-			const stored = await env.CLOUDIE_STATE.get(stateKey);
+			const stored = await env.CLOUDIE_STATE.getByName("global").readState();
 			let state: (typeof expressions)[number] = "Sleep";
 			let updatedAt: string | null = null;
 			if (stored) {

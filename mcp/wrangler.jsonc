@@ -11,20 +11,25 @@
 	"name": "cloudie-mcp",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-07-02",
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
+	"compatibility_flags": ["nodejs_compat"],
 	"observability": {
-		"enabled": true
+		"enabled": true,
 	},
 	"upload_source_maps": true,
-	"kv_namespaces": [
-		{
-			"binding": "CLOUDIE_STATE",
-			// Wrangler uses this local namespace ID; deploy injects the real Cloudflare ID.
-			"id": "00000000000000000000000000000000"
-		}
-	]
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "CLOUDIE_STATE",
+				"class_name": "CloudieState",
+			},
+		],
+	},
+	"exports": {
+		"CloudieState": {
+			"type": "durable-object",
+			"storage": "sqlite",
+		},
+	},
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
